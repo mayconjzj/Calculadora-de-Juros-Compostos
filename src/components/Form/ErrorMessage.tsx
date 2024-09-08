@@ -1,17 +1,25 @@
 import { HTMLAttributes, forwardRef } from 'react';
-import { useFormContext } from 'react-hook-form';
+import {
+  FieldError,
+  FieldErrors,
+  FieldValues,
+  useFormContext
+} from 'react-hook-form';
 
 export type ErrorMessageProps = HTMLAttributes<HTMLDivElement> & {
   field: string;
 };
 
-const get = (obj: Record<any, any>, path: string) => {
+const get = (obj: FieldErrors<FieldValues>, path: string) => {
   const travel = (regexp: RegExp) =>
     String.prototype.split
       .call(path, regexp)
       .filter(Boolean)
       .reduce(
-        (res, key) => (res !== null && res !== undefined ? res[key] : res),
+        (res: FieldErrors | FieldError | undefined, key: string) =>
+          res !== null && res !== undefined
+            ? (res as FieldErrors)[key as keyof FieldErrors]
+            : undefined,
         obj
       );
 
@@ -33,7 +41,7 @@ export const ErrorMessage = forwardRef<HTMLDivElement, ErrorMessageProps>(
     }
 
     return (
-      <span ref={ref} {...props}>
+      <span ref={ref} {...props} className="text-red-500">
         {fieldError.message?.toString()}
       </span>
     );
