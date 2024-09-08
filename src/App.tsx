@@ -1,11 +1,11 @@
 import { useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { FormProvider, useForm } from 'react-hook-form';
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 
-import { Button } from './components/ui/Button';
-import { Input } from './components/ui/Input';
+import { Button } from './components/Button';
+import { Form } from './components/Form';
 
 export const App = () => {
   const [value, setValue] = useState<
@@ -28,14 +28,15 @@ export const App = () => {
 
   type CreateInvestmentSchema = z.infer<typeof createInvestmentSchema>;
 
+  const createInvestment = useForm<CreateInvestmentSchema>({
+    resolver: zodResolver(createInvestmentSchema)
+  });
+
   const {
-    register,
     handleSubmit,
     setError,
     formState: { errors }
-  } = useForm<CreateInvestmentSchema>({
-    resolver: zodResolver(createInvestmentSchema)
-  });
+  } = createInvestment;
 
   const handleCreateInvestment = ({
     initialValue,
@@ -83,65 +84,59 @@ export const App = () => {
         </section>
 
         <section>
-          <form
-            onSubmit={handleSubmit(handleCreateInvestment)}
-            className="flex-1 space-y-3"
-          >
-            <div className="flex flex-col gap-y-1">
-              <label htmlFor="initialValue">Valor Inicial Aplicado</label>
-              <Input
-                type="number"
-                placeholder="0,00"
-                {...register('initialValue')}
-              />
-              {errors.initialValue && (
-                <span className="text-red-500">
-                  {errors.initialValue?.message}
-                </span>
-              )}
-            </div>
+          <FormProvider {...createInvestment}>
+            <form
+              onSubmit={handleSubmit(handleCreateInvestment)}
+              className="flex-1 space-y-3"
+            >
+              <Form.Field>
+                <Form.Label htmlFor="initialValue">
+                  Valor Inicial Aplicado
+                </Form.Label>
+                <Form.Input
+                  type="number"
+                  placeholder="0,00"
+                  name="initialValue"
+                />
+                <Form.ErrorMessage field="initialValue" />
+              </Form.Field>
 
-            <div className="flex flex-col gap-y-1">
-              <label htmlFor="incrementValue">Valor Mensal Aplicado</label>
-              <Input
-                type="number"
-                placeholder="0,00"
-                {...register('incrementValue')}
-              />
-              {errors.incrementValue && (
-                <span className="text-red-500">
-                  {errors.incrementValue?.message}
-                </span>
-              )}
-            </div>
+              <Form.Field>
+                <Form.Label htmlFor="incrementValue">
+                  Valor Mensal Aplicado
+                </Form.Label>
+                <Form.Input
+                  type="number"
+                  placeholder="0,00"
+                  name="incrementValue"
+                />
+                <Form.ErrorMessage field="incrementValue" />
+              </Form.Field>
 
-            <div className="flex flex-col gap-y-1">
-              <label htmlFor="interestRate">Taxa de Juros Anual</label>
-              <Input
-                type="number"
-                placeholder="0%"
-                {...register('interestRate')}
-              />
-              {errors.interestRate && (
-                <span className="text-red-500">
-                  {errors.interestRate?.message}
-                </span>
-              )}
-            </div>
+              <Form.Field>
+                <Form.Label htmlFor="interestRate">
+                  Taxa de Juros Anual
+                </Form.Label>
+                <Form.Input
+                  type="number"
+                  placeholder="0%"
+                  name="interestRate"
+                />
+                <Form.ErrorMessage field="interestRate" />
+              </Form.Field>
 
-            <div className="flex flex-col gap-y-1">
-              <label htmlFor="years">Tempo em Anos</label>
-              <Input type="number" placeholder="0" {...register('years')} />
-              {errors.years && (
-                <span className="text-red-500">{errors.years?.message}</span>
-              )}
-            </div>
+              <Form.Field>
+                <Form.Label htmlFor="years">Tempo em Anos</Form.Label>
+                <Form.Input type="number" placeholder="0" name="years" />
+                <Form.ErrorMessage field="years" />
+              </Form.Field>
 
-            <Button type="submit">Calcular</Button>
-            {errors.root && (
-              <div className="text-red-500">{errors.root.message}</div>
-            )}
-          </form>
+              <Button type="submit">Calcular</Button>
+              {errors.root && (
+                <div className="text-red-500">{errors.root.message}</div>
+              )}
+            </form>
+          </FormProvider>
         </section>
 
         {value !== undefined && (
