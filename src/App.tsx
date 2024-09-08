@@ -19,7 +19,10 @@ export const App = () => {
     incrementValue: z.coerce
       .number()
       .nonnegative('O valor incremental deve ser positivo!'),
-    years: z.coerce.number().min(1, 'O período mínimo de 1 ano!'),
+    years: z.coerce
+      .number()
+      .min(1, 'O período mínimo de 1 ano!')
+      .transform((value) => value * 12),
     interestRate: z.coerce
       .number()
       .min(1, 'Taxa de juros mínima de 1%!')
@@ -42,7 +45,7 @@ export const App = () => {
     initialValue,
     incrementValue,
     interestRate,
-    years
+    years: months
   }: CreateInvestmentSchema) => {
     if (!initialValue && !incrementValue) {
       setError('root', {
@@ -54,11 +57,9 @@ export const App = () => {
     }
 
     let finalyValue = initialValue;
-    for (let year = 1; year <= years; year++) {
-      for (let month = 1; month <= 12; month++) {
-        finalyValue += incrementValue;
-        finalyValue *= Math.pow(1 + interestRate, 1 / 12);
-      }
+    for (let month = 1; month <= months; month++) {
+      finalyValue += incrementValue;
+      finalyValue *= Math.pow(1 + interestRate, 1 / 12);
     }
 
     setValue({
@@ -66,7 +67,7 @@ export const App = () => {
       initialValue,
       incrementValue,
       interestRate,
-      years
+      years: months / 12
     });
   };
 
@@ -141,13 +142,46 @@ export const App = () => {
 
         {value !== undefined && (
           <section className="w-full px-4 py-2 bg-gray-800 border border-gray-600 rounded-lg text-gray-200 mt-3">
-            <h2 className="my-6">Resultados:</h2>
-            <span>
-              {value.finalyValue.toLocaleString('pt-BR', {
-                style: 'currency',
-                currency: 'BRL'
-              })}
-            </span>
+            <h2>Resultados:</h2>
+
+            <div>
+              <h3>Patrimônio Final:</h3>
+              <span className="text-green-400 font-semibold">
+                {value.finalyValue.toLocaleString('pt-BR', {
+                  style: 'currency',
+                  currency: 'BRL'
+                })}
+              </span>
+            </div>
+
+            <div>
+              <h3>Outras Informações</h3>
+              <ul>
+                <li>
+                  Valor total Aplicado:{' '}
+                  <strong>
+                    {value.years * 12 * value.incrementValue +
+                      value.initialValue}
+                  </strong>
+                </li>
+                <li>
+                  Meses: <strong>{value.years * 12}</strong>
+                </li>
+                <li>
+                  Retorno em Porcentagem:{' '}
+                  <strong>
+                    {Math.round(
+                      (value.finalyValue /
+                        (value.years * 12 * value.incrementValue +
+                          value.initialValue) -
+                        1) *
+                        100
+                    )}
+                    %
+                  </strong>
+                </li>
+              </ul>
+            </div>
           </section>
         )}
       </div>
